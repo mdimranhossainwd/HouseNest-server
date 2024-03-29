@@ -20,6 +20,16 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    const advertisementCollections = client
+      .db("housenestDB")
+      .collection("advertisement");
+
+    // CURD OPERATIONS
+    app.get("/housenest/v1/advertisement", async (req, res) => {
+      const cursor = await advertisementCollections.find().toArray();
+      res.send(cursor);
+    });
+
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
