@@ -33,6 +33,7 @@ async function run() {
       .collection("advertisement");
 
     const reviewCollections = client.db("housenestDB").collection("reviews");
+    const userCollections = client.db("housenestDB").collection("users");
     const wishlistsCollections = client
       .db("housenestDB")
       .collection("wishlists");
@@ -62,10 +63,23 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/housenest/api/v1/wishlists", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await wishlistsCollections.find(query).toArray();
+      res.send(result);
+    });
+
     app.get("/housenest/api/v1/wishlists/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await wishlistsCollections.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/housenest/api/v1/users", async (req, res) => {
+      const body = req.body;
+      const result = await userCollections.insertOne(body);
       res.send(result);
     });
 
