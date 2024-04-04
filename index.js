@@ -34,6 +34,8 @@ async function run() {
 
     const reviewCollections = client.db("housenestDB").collection("reviews");
     const userCollections = client.db("housenestDB").collection("users");
+    const offerCollections = client.db("housenestDB").collection("offer");
+    const UserReviewCollections = client.db("housenestDB").collection("review");
     const wishlistsCollections = client
       .db("housenestDB")
       .collection("wishlists");
@@ -80,6 +82,35 @@ async function run() {
     app.post("/housenest/api/v1/users", async (req, res) => {
       const body = req.body;
       const result = await userCollections.insertOne(body);
+      res.send(result);
+    });
+
+    app.post("/housenest/api/v1/offer", async (req, res) => {
+      const body = req.body;
+      const result = await offerCollections.insertOne(body);
+      res.send(result);
+    });
+
+    app.get("/housenest/api/v1/offer", async (req, res) => {
+      const cursor = await offerCollections.find().toArray();
+      res.send(cursor);
+    });
+
+    app.post("/housenest/api/v1/review", async (req, res) => {
+      const body = req.body;
+      const result = await UserReviewCollections.insertOne(body);
+      res.send(result);
+    });
+
+    app.get("/housenest/api/v1/review", async (req, res) => {
+      const cursor = await UserReviewCollections.find().toArray();
+      res.send(cursor);
+    });
+
+    app.delete("/housenest/api/v1/review/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await UserReviewCollections.deleteOne(query);
       res.send(result);
     });
 
