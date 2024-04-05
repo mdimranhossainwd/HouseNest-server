@@ -36,6 +36,12 @@ async function run() {
     const userCollections = client.db("housenestDB").collection("users");
     const offerCollections = client.db("housenestDB").collection("offer");
     const UserReviewCollections = client.db("housenestDB").collection("review");
+    const addPropertyCollections = client
+      .db("housenestDB")
+      .collection("addProperty");
+    const roleUserCollections = client
+      .db("housenestDB")
+      .collection("roleusers");
     const wishlistsCollections = client
       .db("housenestDB")
       .collection("wishlists");
@@ -72,11 +78,22 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/housenest/api/v1/addproperty", async (req, res) => {
+      const cursor = await addPropertyCollections.find().toArray();
+      res.send(cursor);
+    });
+
     app.get("/housenest/api/v1/wishlists/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await wishlistsCollections.findOne(query);
       res.send(result);
+    });
+
+    app.get("/housenest/api/v1/roleusers/:email", async (req, res) => {
+      const email = req.params.email;
+      const cursor = await roleUserCollections.findOne({ email });
+      res.send(cursor);
     });
 
     app.post("/housenest/api/v1/users", async (req, res) => {
@@ -92,7 +109,9 @@ async function run() {
     });
 
     app.get("/housenest/api/v1/offer", async (req, res) => {
-      const cursor = await offerCollections.find().toArray();
+      const email = req.query.email;
+      const query = { email: email };
+      const cursor = await offerCollections.find(query).toArray();
       res.send(cursor);
     });
 
@@ -111,6 +130,44 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await UserReviewCollections.deleteOne(query);
+      res.send(result);
+    });
+
+    app.post("/housenest/api/v1/addproperty", async (req, res) => {
+      const body = req.body;
+      const result = await addPropertyCollections.insertOne(body);
+      res.send(result);
+    });
+
+    app.get("/housenest/api/v1/addproperty/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const cursor = await addPropertyCollections.findOne(query);
+      res.send(cursor);
+    });
+
+    app.delete("/housenest/api/v1/addproperty/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await addPropertyCollections.deleteOne(query);
+      res.send(result);
+    });
+
+    app.patch("/housenest/api/v1/addproperty/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateProperty = await req.body;
+      const updateItem = {
+        $set: {
+          title: updateProperty.title,
+          img: updateProperty.img,
+          location: updateProperty.location,
+          email: updateProperty.email,
+          agent: updateProperty.agent,
+          price: updateProperty.price,
+        },
+      };
+      const result = await addPropertyCollections.updateOne(filter, updateItem);
       res.send(result);
     });
 
