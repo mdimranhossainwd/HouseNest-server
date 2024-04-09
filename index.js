@@ -1,8 +1,10 @@
 const express = require("express");
 const app = express();
-require("dotenv").config();
+const { v4: uuidv4 } = require("uuid");
 const cors = require("cors");
+require("dotenv").config();
 const stripe = require("stripe")(process.env.HOUSENEST_STRIPE_SECRET_KEY);
+
 const port = process.env.PORT || 5000;
 
 app.use(
@@ -48,8 +50,9 @@ async function run() {
       .db("housenestDB")
       .collection("wishlists");
 
-    //  PAYMENT POST METHOD
-    app.post("/housenest/api/v1/create-payment-intent", async (req, res) => {
+    // PAYMENT OST METHOD
+    // Endpoint to create a payment intent
+    app.post("/resturant/api/v1/create-payment-intent", async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
       console.log(amount, "amount inside the intent");
@@ -64,8 +67,7 @@ async function run() {
         clientSecret: paymentIntent.client_secret,
       });
     });
-
-    app.post("/housenest/api/v1/payments", async (req, res) => {
+    app.post("/housenest/api/v1/payment", async (req, res) => {
       const payment = req.body;
       const result = await paymentCollections.insertOne(payment);
       console.log("payment body", payment);
@@ -81,7 +83,7 @@ async function run() {
       res.send({ result, deleteResult });
     });
 
-    app.get("/housenest/api/v1/payments", async (req, res) => {
+    app.get("/housenest/api/v1/payment", async (req, res) => {
       const result = await paymentCollections.find().toArray();
       res.send(result);
     });
