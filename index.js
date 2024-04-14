@@ -50,13 +50,11 @@ async function run() {
       .db("housenestDB")
       .collection("wishlists");
 
-    // PAYMENT OST METHOD
-    // Endpoint to create a payment intent
-    app.post("/resturant/api/v1/create-payment-intent", async (req, res) => {
+    app.post("/housenest/api/v1/create-payment-intent", async (req, res) => {
       const { price } = req.body;
-      const amount = parseInt(price * 100);
+      const numericPrice = parseFloat(price);
+      const amount = parseInt(numericPrice * 100);
       console.log(amount, "amount inside the intent");
-
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
@@ -67,6 +65,7 @@ async function run() {
         clientSecret: paymentIntent.client_secret,
       });
     });
+
     app.post("/housenest/api/v1/payment", async (req, res) => {
       const payment = req.body;
       const result = await paymentCollections.insertOne(payment);
@@ -81,11 +80,6 @@ async function run() {
       const deleteResult = await offerCollections.deleteMany(query);
 
       res.send({ result, deleteResult });
-    });
-
-    app.get("/housenest/api/v1/payment", async (req, res) => {
-      const result = await paymentCollections.find().toArray();
-      res.send(result);
     });
 
     // CURD OPERATIONS
@@ -144,6 +138,11 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/housenest/api/v1/users", async (req, res) => {
+      const result = await userCollections.find().toArray();
+      res.send(result);
+    });
+
     app.post("/housenest/api/v1/offer", async (req, res) => {
       const body = req.body;
       const result = await offerCollections.insertOne(body);
@@ -171,6 +170,13 @@ async function run() {
     app.get("/housenest/api/v1/review", async (req, res) => {
       const cursor = await UserReviewCollections.find().toArray();
       res.send(cursor);
+    });
+
+    app.delete("/housenest/api/v1/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollections.deleteOne(query);
+      res.send(result);
     });
 
     app.delete("/housenest/api/v1/review/:id", async (req, res) => {
