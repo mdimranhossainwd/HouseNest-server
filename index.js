@@ -121,6 +121,7 @@ async function run() {
 
     app.get("/housenest/api/v1/wishlists/:id", async (req, res) => {
       const id = req.params.id;
+
       const query = { _id: new ObjectId(id) };
       const result = await wishlistsCollections.findOne(query);
       res.send(result);
@@ -140,6 +141,41 @@ async function run() {
 
     app.get("/housenest/api/v1/users", async (req, res) => {
       const result = await userCollections.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/housenest/api/v1/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollections.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.patch("/housenest/api/v1/users/agent/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: "agent",
+        },
+      };
+      const result = await userCollections.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.patch("/housenest/api/v1/users/fraud/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: "fraud",
+        },
+      };
+      const result = await userCollections.updateOne(filter, updateDoc);
       res.send(result);
     });
 
