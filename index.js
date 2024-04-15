@@ -11,7 +11,11 @@ const port = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "https://housenest-4791e.web.app",
+      "https://housenest-4791e.firebaseapp.com",
+      "http://localhost:5173",
+    ],
     credentials: true,
   })
 );
