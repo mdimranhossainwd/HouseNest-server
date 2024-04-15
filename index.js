@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const { v4: uuidv4 } = require("uuid");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const stripe = require("stripe")(process.env.HOUSENEST_STRIPE_SECRET_KEY);
 
@@ -14,6 +16,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.HOUSENEST_USERNAME}:${process.env.HOUSENEST_PASSWORD}@cluster0.2xcsswz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -40,6 +43,9 @@ async function run() {
     const paymentCollections = client.db("housenestDB").collection("payments");
     const offerCollections = client.db("housenestDB").collection("offer");
     const UserReviewCollections = client.db("housenestDB").collection("review");
+    const allPropertiesCollections = client
+      .db("housenestDB")
+      .collection("properties");
     const addPropertyCollections = client
       .db("housenestDB")
       .collection("addProperty");
@@ -49,6 +55,40 @@ async function run() {
     const wishlistsCollections = client
       .db("housenestDB")
       .collection("wishlists");
+
+    const gateman = (req, res, next) => {
+      const { token } = req.cookies;
+
+      if (!token) {
+        return res.status(401).send({ message: "Your are not Authorized" });
+      }
+
+      jwt.verify(
+        token,
+        process.env.RESTURANT_ACCESS_TOKEN,
+        function (err, decoded) {
+          if (err) {
+            return res.status(401).send({ message: "Your are not Authorized" });
+          }
+          req.user = decoded;
+          next();
+        }
+      );
+    };
+
+    app.post("/housenest/api/v1/auth/access-token", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.HOUSENEST_ACCESS_TOKEN, {
+        expiresIn: "1h",
+      });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+        })
+        .send({ success: true });
+    });
 
     app.post("/housenest/api/v1/create-payment-intent", async (req, res) => {
       const { price } = req.body;
@@ -80,6 +120,11 @@ async function run() {
       const deleteResult = await offerCollections.deleteMany(query);
 
       res.send({ result, deleteResult });
+    });
+
+    app.get("/housenest/api/v1/payment", async (req, res) => {
+      const cursor = await paymentCollections.find().toArray();
+      res.send(cursor);
     });
 
     // CURD OPERATIONS
@@ -257,6 +302,32 @@ async function run() {
         },
       };
       const result = await addPropertyCollections.updateOne(filter, updateItem);
+      res.send(result);
+    });
+
+    app.post("/housenest/api/v1/allproperties", async (req, res) => {
+      const body = req.body;
+      const result = await allPropertiesCollections.insertOne(body);
+      res.send(result);
+    });
+
+    app.get("/housenest/api/v1/allproperties", async (req, res) => {
+      const result = await allPropertiesCollections.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/housenest/api/v1/allproperties/text/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          text: "verify",
+        },
+      };
+      const result = await allPropertiesCollections.updateOne(
+        filter,
+        updateDoc
+      );
       res.send(result);
     });
 
