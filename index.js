@@ -150,6 +150,11 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/housenest/api/v1/reviews", async (req, res) => {
+      const cursor = await reviewCollections.find().toArray();
+      res.send(cursor);
+    });
+
     app.post("/housenest/api/v1/wishlists", async (req, res) => {
       const body = req.body;
       const result = await wishlistsCollections.insertOne(body);
