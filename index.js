@@ -155,6 +155,13 @@ async function run() {
       res.send(cursor);
     });
 
+    app.delete("/housenest/api/v1/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await reviewCollections.deleteOne(query);
+      res.send(result);
+    });
+
     app.post("/housenest/api/v1/wishlists", async (req, res) => {
       const body = req.body;
       const result = await wishlistsCollections.insertOne(body);
